@@ -1,57 +1,25 @@
 import 'dart:convert';
-import '1-get_user_id.dart';
 
-Future<String> fetchUserOrders(String id) async {
-  var orders = {
-    "7ee9a243-01ca-47c9-aa14-0149789764c3": ["pizza", "orange"]
-  };
-  try {
-    return Future.delayed(
-        const Duration(seconds: 2), () => json.encode(orders[id]));
-  } catch (err) {
-    return "error caught : $err";
-  }
-}
-
-Future<String> fetchUserData() => Future.delayed(
-      const Duration(seconds: 2),
-      () =>
-          '{"id" : "7ee9a243-01ca-47c9-aa14-0149789764c3", "username" : "admin"}',
-    );
-
-Future<String> fetchProductPrice(product) async {
-  var products = {"pizza": 20.30, "orange": 10, "water": 5, "soda": 8.5};
-  try {
-    return Future.delayed(
-        const Duration(seconds: 2), () => json.encode(products[product]));
-  } catch (err) {
-    return "error caught : $err";
-  }
-}
-
-Future<List<dynamic>> parseJsonList(String jsonList) async {
-  try {
-    return json.decode(jsonList);
-  } catch (e) {
-    print('Error parsing JSON list: $e');
-    return [];
-  }
-}
+import '4-util.dart';
 
 Future<double> calculateTotal() async {
   try {
-    var userId = await getUserId();
-    var userOrders = await parseJsonList(await fetchUserOrders(userId));
-    
-    double total = 0.0;
-    for (var product in userOrders) {
-      var priceStr = await fetchProductPrice(product);
-      var price = double.tryParse(priceStr) ?? 0.0;
-      total += price;
+    String data = await fetchUserData();
+
+    Map dataMap = jsonDecode(data);
+
+    String userOrder = await fetchUserOrders(dataMap['id']);
+    userOrder = userOrder.substring(1, userOrder.length - 1);
+    List<String> productsUser = userOrder.split(',');
+
+    double sumPro = 0;
+    for (String product in productsUser) {
+      product = product.substring(1, product.length - 1);
+      sumPro += double.parse(await fetchProductPrice(product));
     }
-    return total;
+
+    return sumPro;
   } catch (e) {
-    print('Error calculating total: $e');
-    return -1.0;
+    return -1;
   }
 }
