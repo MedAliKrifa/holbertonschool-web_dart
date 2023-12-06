@@ -1,20 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-Future<void> printRmCharacters() async {
-  try {
-    final apiUrl = 'https://rickandmortyapi.com/api/character';
-    var  response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode == 200) {
-      var jsonResponse = json.decode(response.body);
-      var characters = jsonResponse['results'];
-      characters.forEach((character) {
-        print(character['name']);
-      });
-    } else {
-      print('Request failed with status: ${response.statusCode}');
+printRmCharacters() async {
+  final response =
+      await http.get(Uri.parse('https://rickandmortyapi.com/api/character'));
+
+  if (response.statusCode == 200) {
+    // If the server did return a 200 OK response,
+    // then parse the JSON.
+    var data = jsonDecode(response.body);
+    List characters = data['results'];
+    for (var character in characters) {
+      print(character['name']);
     }
-  } catch (error) {
-    print('Error caught: $error');
+  } else {
+    // If the server did not return a 200 OK response,
+    // then throw an exception.
+    throw Exception('Failed to load album');
   }
 }
